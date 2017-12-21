@@ -8,12 +8,25 @@
 
                 var $map = $(this);
 
+                options = {
+                    type: 'yandex',
+                    zoom: '18;18',
+                    breakPoint: '768'
+                };
+
+                // Генерируем идентификатор для карты
+                idMap = 'js-map-id-' + Math.round( Math.random()*10000);
+                $map.attr('id', idMap);
+
+                // Объединяем стандартные и переданные опции
+                options = $.extend(true, options, customOptions);
+
                 // Создаем объект со всеми необходимыми опциями
-                var optionsInit = makeOptions($map);
-                if(!optionsInit){
-                    console.warn('Ошибка инициализации');
-                    return;
-                }
+                // var optionsInit = makeOptions($map);
+                // if(!optionsInit){
+                //     console.warn('Ошибка инициализации');
+                //     return;
+                // }
 
                 // Инициализируем карту
                 mapInitial(optionsInit.type);
