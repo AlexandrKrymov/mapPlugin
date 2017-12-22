@@ -8,382 +8,248 @@
 
                 var $map = $(this);
 
-                options = {
-                    type: 'yandex',
-                    zoom: [18, 18],
-                    breakPoint: '768'
+                var helper = {
+                    addId: function($elem, prefix){
+                        idMap = prefix + Math.round(Math.random() * 10000);
+                        $elem.attr('id', idMap);
+                    },
+                    extendOptions:function(defaultOptions, customOptions) {
+                        return $.extend(true, defaultOptions, customOptions);
+                    },
+                    getType:function($elem,options){
+                        var type;
+                        var dataMapType = $elem.attr('data-map-type');
+                        if (dataMapType === 'yandex' || dataMapType === 'google') {
+                            type = dataMapType;
+                        } else {
+                            type = options.type;
+                        }
+                        return type;
+                    },
+                    dataToArray:function($elem, atr, sep, type){
+                        var dataArray
+                        var atrValue = $elem.attr(atr);
+                        if(!atrValue){
+                            return [];
+                        }
+                        if (type == 'string') {
+                            return atrValue.split(sep);
+                        } else if (type === 'number') {
+                            dataArray = atrValue.split(sep);
+                            for (var i = 0; i < dataArray.length; i++) {
+                                dataArray[i] = parseFloat(dataArray[i]);
+                            }
+                            return dataArray;
+                        }
+                    },
+                    getCoords:function(arr, msg){
+                        var coordsArray = [];
+                        var pairCount = (arr.length - arr.length % 2) / 2;
+                        // Если координат нет, то возвращаем пустой массив
+                        if (!arr.length) {
+                            return coordsArray;
+                        }
+                        // Если колличество координат не четное, значит допущена ошибка, выводим сообщение в консоль
+                        if (+arr.length % 2 !== 0) {
+                            console.warn(msg);
+                        }
+                        for (var i = 0; i < pairCount; i++) {
+                            if (arr.length >= 2) {
+                                coordsArray[i] = [arr.shift(), arr.shift()];
+                            }
+                        }
+                        return coordsArray;
+                    },
+                    makePlacemark:function(coords,label,desc){
+                        var placemark = {};
+                        if(!coords.length){
+                            return placemark;
+                        }
+                        placemark.coords = coords;
+                        if(label){
+                            placemark.label = label;
+                        }
+                        if(desc){
+                            placemark.description = desc;
+                        }
+                        return placemark;
+                    },
+                    makeArrayPlacemarks:function(coords,labels,descs){
+                        var count = coords.length;
+                        var arrayPlacemarks = [];
+                        for(var i = 0; i < count; i++){
+                            arrayPlacemarks[i] = helper.makePlacemark(coords[i], labels[i], descs[i]);
+                        }
+                        return arrayPlacemarks;
+                    },
+                    makeInitOptions:function(type,center,placemarks,zoom,breakpoint){
+                        return {
+                            type:type,
+                            center:center,
+                            placemarks:placemarks,
+                            zoom:zoom,
+                            breakpoint:breakpoint
+                        };
+                    },
+                    getCoordsMarker:function ($elem){
+                        var coords;
+                        var dataCoords = helper.dataToArray($elem, 'data-map-coords', ';', 'number');
+                        if (!dataCoords.length) {
+                            console.warn('Пустой атрибут data-map-coords');
+                            return;
+                        }
+                        var msg = 'Возможно допущена ошибка в атрибуте data-map-coords';
+                        coords = helper.getCoords(dataCoords, msg);
+                        return coords;
+                    },
+                    getCenterCoords:function($elem,markerCoords){
+                        var coords;
+                        var dataMapCenter = helper.dataToArray($elem, 'data-map-center', ';', 'number');
+                        var msg = 'Возможно допущена ошибка в атрибуте data-map-center';
+                        var arrayMapCenter = helper.getCoords(dataMapCenter, msg);
+                        if (!arrayMapCenter.length) {
+                            coords = [markerCoords[0], markerCoords[0]];
+                            return coords;
+                        }
+                        return arrayMapCenter;
+                    },
+                    getLabels:function($elem){
+                        return helper.dataToArray($elem,'data-map-label',';','string');
+                    },
+                    getDescriptions:function($elem){
+                        return helper.dataToArray($elem,'data-map-desc',';','string');
+                    },
+                    getZoom:function($elem,options){
+                        var zoom = helper.dataToArray($elem,'data-map-zoom',';','number');
+                        if(!zoom.length){
+                            zoom = options.zoom;
+                            return zoom;
+                        }
+                        if(zoom.length < 2){
+                            zoom[1] = options.zoom[1];
+                        }
+                        return zoom;
+                    },
+                    getBreakpoint:function($elem,options){
+                        var breakpoint = helper.dataToArray($elem,'data-map-breakpoint',';','number');
+                        if(!breakpoint.length){
+                            breakpoint = options.zoom;
+                            return breakpoint;
+                        }
+                        return breakpoint;
+                    },
+                    getInitOptions:function($elem){
+
+                        var options = {
+                            type: 'yandex',
+                            zoom: [18, 18],
+                            breakPoint: '768'
+                        };
+
+                        // Присваиваем id блоку с картой
+                        helper.addId($map, 'js-map-id-');
+
+                        // Объединяем стандартные и переданные опции
+                        options = helper.extendOptions(options, customOptions);
+
+                        // Получаем тип карты(yandex или google)
+                        var mapType = helper.getType($elem, options);
+
+                        // Получаем координаты точек
+                        var coords = helper.getCoordsMarker($elem);
+
+                        // Получаем координаты центра
+                        var center = helper.getCenterCoords($elem,coords);
+
+                        // Получаем массив подписей для точек
+                        var labels = helper.getLabels($elem);
+
+                        // Получаем массив описаний для точек
+                        var descriptions = helper.getDescriptions($elem);
+
+                        // Создаем массив маркеров
+                        var placemarks = helper.makeArrayPlacemarks(coords,labels,descriptions);
+
+                        // Получаем значение зума
+                        var zoom = helper.getZoom($elem, options);
+
+                        // Получаем значение брекпоинта
+                        var breakpoint = helper.getBreakpoint($elem, options);
+
+                        return helper.makeInitOptions(mapType,center,placemarks,zoom,breakpoint);
+                    }
                 };
 
-                // Присваиваем id блоку с картой
-                addId($map, 'js-map-id-');
-
-                // Объединяем стандартные и переданные опции
-                options = extendOptions(options, customOptions);
-
-                // Получаем тип карты(yandex или google)
-                var mapType;
-                var dataMapType = $map.attr('data-map-type');
-                if (dataMapType === 'yandex' || dataMapType === 'google') {
-                    maptype = dataMapType;
-                } else {
-                    maptype = options.type;
-                }
-
-                // Получаем координаты точек
-                var dataMarkerCoords = dataToArray($map, 'data-map-coords', ';', 'number');
-                if (!dataMarkerCoords.length) {
-                    console.warn('Пустой атрибут data-map-coords');
-                    return;
-                }
-                var coordsMsg = 'Возможно допущена ошибка в атрибуте data-map-coords';
-                var mapCoords = getCoords(dataMarkerCoords, coordsMsg);
-
-                // Получаем координаты центра
-                var mapCenter;
-                var dataMapCenter = dataToArray($map, 'data-map-center', ';', 'number');
-                var centerMsg = 'Возможно допущена ошибка в атрибуте data-map-center';
-                var arrayMapCenter = getCoords(dataMapCenter, centerMsg);
-                if (!arrayMapCenter.length) {
-                    mapCenter = [mapCoords[0], mapCoords[0]]
-                }
-                console.log(mapCenter);
-                // Создаем объект со всеми необходимыми опциями
-                // var optionsInit = makeOptions($map);
-                // if(!optionsInit){
-                //     console.warn('Ошибка инициализации');
-                //     return;
-                // }
-
-                // Инициализируем карту
-                mapInitial(optionsInit.type);
-
-                // Создание объекта с необходимыми опциями
-                function makeOptions($map) {
-                    var options, idMap, type, dataCenter, center, mCenter, coords, labels, descriptions, placemarks, dataZoom, zoom, mobileZoom, breakPoint, optionsInit;
-                    options = {
-                        type: 'yandex',
-                        zoom: '18;18',
-                        breakPoint: 768
-                    };
-
-                    // Генерируем идентификатор для карты
-                    idMap = 'js-map-id-' + Math.round(Math.random() * 10000);
-                    $map.attr('id', idMap);
-                    // Объединяем стандартные и переданные опции
-                    options = $.extend(true, options, customOptions);
-                    // Получаем тип карты
-                    type = checkAttr($map, 'data-map-type', ';', false);
-                    // console.log(type);
-                    if (!type) {
-                        type = options.type;
-                    }
-                    // Получаем координаты точек на карте
-                    coords = checkAttr($map, 'data-map-coords', ';', true, true, true);
-                    if (!coords || !coords[1]) {
-                        if (coords && !coords[1]) console.warn('Возможно пропущена координата в атрибуте data-map-coords');
-                        return;
-                    }
-                    // Получаем координаты центра
-                    dataCenter = checkAttr($map, 'data-map-center', ';', false, true);
-                    if (!dataCenter) {
-                        dataCenter = [];
-                        if (coords.length % 2 === 0) {
-                            var lat = 0;
-                            var lng = 0;
-                            for (var i = 0;
-                                (i + 2) <= coords.length; i += 2) {
-                                lat += +coords[i];
-                                lng += +coords[i + 1];
-                                if ((i + 4) > coords.length) {
-                                    lat = lat / (coords.length / 2);
-                                    lng = lng / (coords.length / 2);
-                                }
-                            }
-                            dataCenter[0] = +lat;
-                            dataCenter[1] = +lng;
-
-                        } else {
-                            dataCenter[0] = +coords[0];
-                            dataCenter[1] = +coords[1];
+                var main = {
+                    init:function($elem){
+                        // Получаем объект с опциями для инициализации
+                        var options = helper.getInitOptions($elem);
+                        if(options.type === 'yandex'){
+                            main.yandex(options);
+                        } else if( options.type === 'google' ){
+                            main.google(options);
                         }
-                    }
-
-                    center = [+dataCenter[0], +dataCenter[1]];
-                    mCenter = [];
-                    if (dataCenter[2] && dataCenter[3]) {
-                        mCenter[0] = +dataCenter[2];
-                        mCenter[1] = +dataCenter[3];
-                    } else {
-                        mCenter[0] = +dataCenter[0];
-                        mCenter[1] = +dataCenter[1];
-                    }
-                    // Получаем подписи к маркерам на карте
-                    labels = checkAttr($map, 'data-map-label', ';', false, true);
-                    // Получаем описания точек на карет
-                    descriptions = checkAttr($map, 'data-map-desc', ';', false, true);
-                    // Создаем массив с маркерами, которые будут на карте
-                    console.log(coords);
-                    console.log(labels);
-                    console.log(descriptions);
-                    placemarks = placemarkMake(coords, labels, descriptions);
-                    console.log(placemarks);
-                    // Получаем значение зума
-                    dataZoom = checkAttr($map, 'data-map-zoom', ';', false, true);
-                    if (!dataZoom) {
-                        dataZoom = options.zoom;
-                    }
-                    zoom = +dataZoom[0];
-                    (dataZoom[1]) ? mobileZoom = +dataZoom[1]: mobileZoom = +dataZoom[0];
-                    //Получаем значение точки перехода от десктопной версии к мобильной
-                    breakPoint = +checkAttr($map, 'data-map-breakpoint', ';', false, true);
-                    if (!breakPoint) {
-                        breakPoint = options.breakPoint;
-                    }
-                    optionsInit = {
-                        idMap: idMap,
-                        type: type,
-                        center: center,
-                        mobileCenter: mCenter,
-                        placemarks: placemarks,
-                        zoom: zoom,
-                        mobileZoom: mobileZoom,
-                        breakPoint: breakPoint
-                    };
-                    return optionsInit;
-                }
-                // Инициализация карты
-                function mapInitial(type) {
-                    if (type === 'yandex') {
-                        // initYandex();
-                    } else if (type === 'google') {
-                        // initGoogle();
-                    }
-                }
-                // Инициализация Яндекс.Карты
-                function initYandex() {
-                    function initMaps() {
-                        console.log(optionsInit.zoom);
-                        console.log(typeof optionsInit.zoom)
-                        mapMain = new ymaps.Map(optionsInit.idMap, {
-                            center: optionsInit.center,
-                            zoom: optionsInit.zoom,
-                            scroll: false,
-                            duration: 1000
-                        });
-
-                        mapMain.behaviors.disable('scrollZoom');
-
-                        for (var i = 0; i < optionsInit.placemarks.length; i++) {
-
-                            var placemark = optionsInit.placemarks[i];
-                            var placemarkCoords = placemark[0];
-                            var placemarkLabel = placemark[1];
-                            var placemarkDescription = placemark[2];
-
-                            mapMain.geoObjects
-                                .add(new ymaps.Placemark(placemarkCoords, {
-                                    iconCaption: placemarkLabel,
-                                    balloonContent: placemarkDescription
-                                }));
-                        }
-                    }
-                    ymaps.ready(initMaps);
-
-                    var lastResolution = 0;
-
-                    function mapResponsive() {
-                        windowWidth = window.innerWidth;
-                        if (windowWidth <= optionsInit.breakPoint && lastResolution > optionsInit.breakPoint || windowWidth <= optionsInit.breakPoint && lastResolution === 0) {
-                            console.log('yandex-mobile');
-                            mapMain.setCenter(optionsInit.mobileCenter);
-                            mapMain.setZoom(optionsInit.mobileZoom);
-                            mapMain.behaviors.disable('drag');
-                            mapMain.behaviors.enable('multiTouch');
-
-                        } else if (windowWidth > optionsInit.breakPoint && lastResolution <= optionsInit.breakPoint && lastResolution !== 0) {
-                            console.log('yandex-desctop');
-                            mapMain.setCenter(optionsInit.center);
-                            mapMain.setZoom(optionsInit.zoom);
-                            mapMain.behaviors.enable('drag');
-                            mapMain.behaviors.enable('multiTouch');
-                        }
-                        lastResolution = windowWidth;
-                    }
-                    ymaps.ready(mapResponsive);
-
-                    $(window).on('resize', function() {
-                        ymaps.ready(mapResponsive);
-                    });
-                }
-                // Инициализация Google Map
-                function initGoogle() {
-                    initMap();
-
-                    function initMap() {
-
-                        var markers = optionsInit.placemarks;
-                        var infoWindow = new google.maps.InfoWindow(),
-                            marker, i;
-
-                        mapMain = new google.maps.Map(document.getElementById(optionsInit.idMap), {
-                            center: { lat: optionsInit.center[0], lng: optionsInit.center[1] },
-                            zoom: optionsInit.zoom,
-                            disableDefaultUI: true,
-                        });
-
-                        for (i = 0; i < markers.length; i++) {
-                            marker = new google.maps.Marker({
-                                position: { lat: +markers[i][0][0], lng: +markers[i][0][1] },
-                                map: mapMain,
-                                title: markers[i][1]
+                    },
+                    yandex: function(options){
+                        console.log('Yandex');
+                        function initMaps() {
+                            mapMain = new ymaps.Map(optionsInit.idMap, {
+                                center: options.center[0],
+                                zoom: options.zoom[0],
+                                scroll: false,
+                                duration: 1000
                             });
 
-                            google.maps.event.addListener(marker, 'click', (function(marker, i) {
-                                return function() {
-                                    infoWindow.setContent(markers[i][2]);
-                                    infoWindow.open(mapMain, marker);
-                                }
-                            })(marker, i));
-                        }
+                            mapMain.behaviors.disable('scrollZoom');
 
-                    }
+                            for (var i = 0; i < options.placemarks.length; i++) {
 
-                    var lastResolution = 0;
+                                var placemark = optionsInit.placemarks[i];
+                                var placemarkCoords = placemark[0];
+                                var placemarkLabel = placemark[1];
+                                var placemarkDescription = placemark[2];
 
-                    function mapResponsive() {
-                        windowWidth = window.innerWidth;
-                        if (windowWidth <= optionsInit.breakPoint && lastResolution > optionsInit.breakPoint || windowWidth <= optionsInit.breakPoint && lastResolution === 0) {
-                            mapMain.setOptions({ 'draggable': false });
-                            mapMain.setOptions({ 'scrollwheel': false });
-                            mapMain.setCenter({ lat: optionsInit.mobileCenter[0], lng: optionsInit.mobileCenter[1] });
-                            mapMain.setZoom(optionsInit.mobileZoom);
-                        } else if (windowWidth > optionsInit.breakPoint && lastResolution <= optionsInit.breakPoint && lastResolution !== 0) {
-                            mapMain.setOptions({ 'draggable': true });
-                            mapMain.setOptions({ 'scrollwheel': true });
-                            mapMain.setCenter({ lat: optionsInit.center[0], lng: optionsInit.center[1] });
-                            mapMain.setZoom(optionsInit.zoom);
-                        }
-                        google.maps.event.trigger(mapMain, 'resize');
-                        lastResolution = windowWidth;
-                    }
-                    $(window).on('resize', function() {
-                        mapResponsive();
-                    });
-
-                    mapResponsive();
-
-                }
-                // Проверка на наличие атрибута
-                function checkAttr(element, attr, separator, drop, slice, warn) {
-                    var result;
-                    if (!slice) {
-                        if (!element.attr(attr)) {
-                            if (warn) console.warn('Пустой атрибут: ' + attr);
-                            return;
-                        } else {
-                            result = $map.attr(attr);
-                            return result;
-                        }
-                    } else {
-                        if (drop) {
-                            if (!element.attr(attr)) {
-                                if (warn) console.warn('Пустой атрибут: ' + attr);
-                                return null;
-                            } else {
-                                result = element.attr(attr).split(separator);
-                                return result;
-                            }
-                        } else {
-                            if (!element.attr(attr)) {
-                                if (warn) console.warn('Пустой атрибут: ' + attr);
-                            } else {
-                                result = $map.attr(attr).split(separator);
-                                return result;
+                                mapMain.geoObjects
+                                    .add(new ymaps.Placemark(placemarkCoords, {
+                                        iconCaption: placemarkLabel,
+                                        balloonContent: placemarkDescription
+                                    }));
                             }
                         }
-                    }
-                }
+                        ymaps.ready(initMaps);
 
-                function coordsMake(coords) {
-                    var stringToArrayCoords = coords.split(';');
-                    var coordinates = [];
-                    var pairCount = (stringToArrayCoords.length / 2) + stringToArrayCoords.length % 2;
-                    console.log(pairCount);
-                    for (var i = 0; i < pairCount; i++) {
-                        coordinates[i] = [stringToArrayCoords[0], stringToArrayCoords[1]];
-                        stringToArrayCoords.shift();
-                        stringToArrayCoords.shift();
-                    }
-                    return coordinates;
-                }
+                        var lastResolution = 0;
 
-                function placemarkMake(coords, labels, desc) {
-                    var placemarksCount = coords.length;
-                    var placemarks = [];
-                    for (var i = 0; i < placemarksCount; i++) {
-                        placemarks[i] = {
-                            coords: [coords[i][0], coords[i][1]],
-                            label: labels[i],
-                            description: desc[i]
+                        function mapResponsive() {
+                            windowWidth = window.innerWidth;
+                            if (windowWidth <= optionsInit.breakPoint && lastResolution > optionsInit.breakPoint || windowWidth <= optionsInit.breakPoint && lastResolution === 0) {
+                                console.log('yandex-mobile');
+                                mapMain.setCenter(optionsInit.mobileCenter);
+                                mapMain.setZoom(optionsInit.mobileZoom);
+                                mapMain.behaviors.disable('drag');
+                                mapMain.behaviors.enable('multiTouch');
+
+                            } else if (windowWidth > optionsInit.breakPoint && lastResolution <= optionsInit.breakPoint && lastResolution !== 0) {
+                                console.log('yandex-desctop');
+                                mapMain.setCenter(optionsInit.center);
+                                mapMain.setZoom(optionsInit.zoom);
+                                mapMain.behaviors.enable('drag');
+                                mapMain.behaviors.enable('multiTouch');
+                            }
+                            lastResolution = windowWidth;
                         }
-                    }
-                    return placemarks;
-                }
+                        ymaps.ready(mapResponsive);
 
-                ///////////////////
-                // New Functions//
-                //////////////////
-
-                // Функция для присвоения id блоку с картой
-                function addId($elem, prefix) {
-                    idMap = prefix + Math.round(Math.random() * 10000);
-                    $elem.attr('id', idMap);
-                }
-
-                // Функция для объединения объектов опций
-                function extendOptions(defaultOptions, customOptions) {
-                    return $.extend(true, defaultOptions, customOptions);
-                }
-
-                // Функция которая получает элемент, название дата-атрибута и разделитель
-                // и возвращает массив значений из дата-атрибута
-
-                function dataToArray($elem, atr, sep, type) {
-                    var dataArray
-                    var atrValue = $elem.attr(atr);
-                    if (type == 'string') {
-                        return atrValue.split(sep);
-                    } else if (type === 'number') {
-                        dataArray = atrValue.split(sep);
-                        for (var i = 0; i < dataArray.length; i++) {
-                            dataArray[i] = parseFloat(dataArray[i]);
-                        }
-                        return dataArray;
+                        $(window).on('resize', function() {
+                            ymaps.ready(mapResponsive);
+                        });
+                    },
+                    google:function(options){
+                        console.log('Google');
                     }
                 }
 
-                // Функция для получения массива координат
-
-                function getCoords(arr, msg) {
-                    var coordsArray = [];
-                    var pairCount = (arr.length - arr.length % 2) / 2;
-                    // Если координат нет, то возвращаем пустой массив
-                    if (!arr.length) {
-                        return coordsArray;
-                    }
-                    // Если колличество координат не четное, значит допущена ошибка, выводим сообщение в консоль
-                    if (+arr.length % 2 !== 0) {
-                        console.warn(msg);
-                    }
-                    for (var i = 0; i < pairCount; i++) {
-                        if (arr.length >= 2) {
-                            coordsArray[i] = [arr.shift(), arr.shift()];
-                        }
-                    }
-                    return coordsArray;
-                }
-
-
+                main.init($map);
             });
         }
 
