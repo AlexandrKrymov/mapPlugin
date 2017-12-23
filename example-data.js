@@ -1,6 +1,7 @@
 //Пример объекта с опциями
 
 var data = {
+    id:'js-map-id-5456',
     type:'yandex',
     center:[[55.3453,55.34534],[55.35435,55.4534]],
     placemarks:[

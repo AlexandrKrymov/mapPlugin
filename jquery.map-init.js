@@ -6,12 +6,15 @@
 
             this.each(function() {
 
+
+
                 var $map = $(this);
 
                 var helper = {
                     addId: function($elem, prefix){
                         idMap = prefix + Math.round(Math.random() * 10000);
                         $elem.attr('id', idMap);
+                        return idMap;
                     },
                     extendOptions:function(defaultOptions, customOptions) {
                         return $.extend(true, defaultOptions, customOptions);
@@ -82,8 +85,9 @@
                         }
                         return arrayPlacemarks;
                     },
-                    makeInitOptions:function(type,center,placemarks,zoom,breakpoint){
+                    makeInitOptions:function(id,type,center,placemarks,zoom,breakpoint){
                         return {
+                            id: id,
                             type:type,
                             center:center,
                             placemarks:placemarks,
@@ -94,7 +98,7 @@
                     getCoordsMarker:function ($elem){
                         var coords;
                         var dataCoords = helper.dataToArray($elem, 'data-map-coords', ';', 'number');
-                        if (!dataCoords.length) {
+                        if (dataCoords.length < 2) {
                             console.warn('Пустой атрибут data-map-coords');
                             return;
                         }
@@ -109,6 +113,10 @@
                         var arrayMapCenter = helper.getCoords(dataMapCenter, msg);
                         if (!arrayMapCenter.length) {
                             coords = [markerCoords[0], markerCoords[0]];
+                            return coords;
+                        }
+                        if(!arrayMapCenter.length < 2){
+                            coords = [arrayMapCenter[0], arrayMapCenter[0]];
                             return coords;
                         }
                         return arrayMapCenter;
@@ -147,7 +155,7 @@
                         };
 
                         // Присваиваем id блоку с картой
-                        helper.addId($map, 'js-map-id-');
+                        var idMap = helper.addId($map, 'js-map-id-');
 
                         // Объединяем стандартные и переданные опции
                         options = helper.extendOptions(options, customOptions);
@@ -157,6 +165,9 @@
 
                         // Получаем координаты точек
                         var coords = helper.getCoordsMarker($elem);
+                        if(!coords){
+                            return false;
+                        }
 
                         // Получаем координаты центра
                         var center = helper.getCenterCoords($elem,coords);
@@ -176,7 +187,9 @@
                         // Получаем значение брекпоинта
                         var breakpoint = helper.getBreakpoint($elem, options);
 
-                        return helper.makeInitOptions(mapType,center,placemarks,zoom,breakpoint);
+                        console.log(helper.makeInitOptions(idMap,mapType,center,placemarks,zoom,breakpoint));
+
+                        return helper.makeInitOptions(idMap,mapType,center,placemarks,zoom,breakpoint);
                     }
                 };
 
@@ -184,6 +197,9 @@
                     init:function($elem){
                         // Получаем объект с опциями для инициализации
                         var options = helper.getInitOptions($elem);
+                        if(!options){
+                            return;
+                        }
                         if(options.type === 'yandex'){
                             main.yandex(options);
                         } else if( options.type === 'google' ){
@@ -193,7 +209,7 @@
                     yandex: function(options){
                         console.log('Yandex');
                         function initMaps() {
-                            mapMain = new ymaps.Map(optionsInit.idMap, {
+                            mapMain = new ymaps.Map(options.id, {
                                 center: options.center[0],
                                 zoom: options.zoom[0],
                                 scroll: false,
@@ -204,15 +220,12 @@
 
                             for (var i = 0; i < options.placemarks.length; i++) {
 
-                                var placemark = optionsInit.placemarks[i];
-                                var placemarkCoords = placemark[0];
-                                var placemarkLabel = placemark[1];
-                                var placemarkDescription = placemark[2];
+                                var placemark = options.placemarks[i];
 
                                 mapMain.geoObjects
-                                    .add(new ymaps.Placemark(placemarkCoords, {
-                                        iconCaption: placemarkLabel,
-                                        balloonContent: placemarkDescription
+                                    .add(new ymaps.Placemark(placemark.coords, {
+                                        iconCaption: placemark.label,
+                                        balloonContent: placemark.description
                                     }));
                             }
                         }
@@ -222,17 +235,17 @@
 
                         function mapResponsive() {
                             windowWidth = window.innerWidth;
-                            if (windowWidth <= optionsInit.breakPoint && lastResolution > optionsInit.breakPoint || windowWidth <= optionsInit.breakPoint && lastResolution === 0) {
+                            if (windowWidth <= options.breakpoint[0] && lastResolution > options.breakpoint[0] || windowWidth <= options.breakpoint[0] && lastResolution === 0) {
                                 console.log('yandex-mobile');
-                                mapMain.setCenter(optionsInit.mobileCenter);
-                                mapMain.setZoom(optionsInit.mobileZoom);
+                                mapMain.setCenter(options.center[1]);
+                                mapMain.setZoom(options.zoom[1]);
                                 mapMain.behaviors.disable('drag');
                                 mapMain.behaviors.enable('multiTouch');
 
-                            } else if (windowWidth > optionsInit.breakPoint && lastResolution <= optionsInit.breakPoint && lastResolution !== 0) {
+                            } else if (windowWidth > options.breakpoint[0] && lastResolution <= options.breakpoint[0] && lastResolution !== 0) {
                                 console.log('yandex-desctop');
-                                mapMain.setCenter(optionsInit.center);
-                                mapMain.setZoom(optionsInit.zoom);
+                                mapMain.setCenter(options.center[0]);
+                                mapMain.setZoom(options.zoom[0]);
                                 mapMain.behaviors.enable('drag');
                                 mapMain.behaviors.enable('multiTouch');
                             }
@@ -246,8 +259,65 @@
                     },
                     google:function(options){
                         console.log('Google');
+                            initMap();
+
+                            function initMap() {
+
+                                var markers = options.placemarks;
+                                var infoWindow = new google.maps.InfoWindow(),
+                                    marker, i;
+
+                                mapMain = new google.maps.Map(document.getElementById(options.id), {
+                                    center: { lat: options.center[0][0], lng: options.center[0][1] },
+                                    zoom: options.zoom[0],
+                                    disableDefaultUI: true,
+                                });
+
+                                for (i = 0; i < options.placemarks.length; i++) {
+                                    var placemark = options.placemarks[i];
+                                    marker = new google.maps.Marker({
+                                        position: { lat: placemark.coords[0], lng: placemark.coords[1] },
+                                        map: mapMain,
+                                        title: placemark.label
+                                    });
+
+                                    google.maps.event.addListener(marker, 'click', (function(marker,placemark) {
+                                        return function() {
+                                            infoWindow.setContent(placemark.description);
+                                            infoWindow.open(mapMain, marker);
+                                        }
+                                    })(marker, placemark));
+                                }
+
+                            }
+
+                            var lastResolution = 0;
+
+                            function mapResponsive() {
+                                windowWidth = window.innerWidth;
+                                if (windowWidth <= options.breakpoint[0] && lastResolution > options.breakpoint[0] || windowWidth <= options.breakpoint[0] && lastResolution === 0) {
+                                    mapMain.setOptions({ 'draggable': false });
+                                    mapMain.setOptions({ 'scrollwheel': false });
+                                    console.log(options.center);
+                                    mapMain.setCenter({ lat: options.center[1][0], lng: options.center[1][1] });
+                                    mapMain.setZoom(options.zoom[1]);
+                                } else if (windowWidth > options.breakpoint[0] && lastResolution <= options.breakpoint[0] && lastResolution !== 0) {
+                                    mapMain.setOptions({ 'draggable': true });
+                                    mapMain.setOptions({ 'scrollwheel': true });
+                                    mapMain.setCenter({ lat: options.center[0][0], lng: options.center[0][1] });
+                                    mapMain.setZoom(options.zoom[0]);
+                                }
+                                google.maps.event.trigger(mapMain, 'resize');
+                                lastResolution = windowWidth;
+                            }
+                            $(window).on('resize', function() {
+                                mapResponsive();
+                            });
+
+                            mapResponsive();
+
                     }
-                }
+                };
 
                 main.init($map);
             });
