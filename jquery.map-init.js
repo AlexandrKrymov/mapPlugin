@@ -6,8 +6,6 @@
 
             this.each(function() {
 
-
-
                 var $map = $(this);
 
                 var helper = {
@@ -204,13 +202,24 @@
                             return;
                         }
                         if(options.type === 'yandex'){
-                            main.yandex(options);
+                            if(typeof ymaps === 'object'){
+                                main.yandex(options);
+                            } else {
+                                console.warn('Не подключен скрипт Yandex Map API');
+                                return false;
+                            }
                         } else if( options.type === 'google' ){
-                            main.google(options);
+                            if(typeof google === 'object' && typeof google.maps === 'object'){
+                                main.google(options);
+                            } else {
+                                console.warn('Не подключен скрипт Google Map API');
+                                return false;
+                            }
                         }
                     },
                     yandex: function(options){
                         function initMaps() {
+                            var mapMain;
                             mapMain = new ymaps.Map(options.id, {
                                 center: options.center[0],
                                 zoom: options.zoom[0],
@@ -230,41 +239,44 @@
                                         balloonContent: placemark.description
                                     }));
                             }
+
+                            var lastResolution = 0;
+
+                            function mapResponsive() {
+                                windowWidth = window.innerWidth;
+                                if (windowWidth <= options.breakpoint) {
+                                    mapMain.setCenter(options.center[1]);
+                                } else if (windowWidth > options.breakpoint) {
+                                    mapMain.setCenter(options.center[0]);
+                                }
+                                if (windowWidth <= options.breakpoint && lastResolution > options.breakpoint || windowWidth <= options.breakpoint && lastResolution === 0) {
+                                    mapMain.setZoom(options.zoom[1]);
+                                    mapMain.behaviors.disable('drag');
+                                    mapMain.behaviors.enable('multiTouch');
+
+                                } else if (windowWidth > options.breakpoint && lastResolution <= options.breakpoint && lastResolution !== 0) {
+                                    mapMain.setZoom(options.zoom[0]);
+                                    mapMain.behaviors.enable('drag');
+                                    mapMain.behaviors.enable('multiTouch');
+                                }
+                                lastResolution = windowWidth;
+                            }
+                            ymaps.ready(mapResponsive);
+
+                            $(window).on('resize', function() {
+                                ymaps.ready(mapResponsive);
+                                // mapResponsive();
+                            });
+
                         }
                         ymaps.ready(initMaps);
 
-                        var lastResolution = 0;
-
-                        function mapResponsive() {
-                            windowWidth = window.innerWidth;
-                            if (windowWidth <= options.breakpoint) {
-                                mapMain.setCenter(options.center[1]);
-                            } else if (windowWidth > options.breakpoint) {
-                                mapMain.setCenter(options.center[0]);
-                            }
-                            if (windowWidth <= options.breakpoint && lastResolution > options.breakpoint || windowWidth <= options.breakpoint && lastResolution === 0) {
-                                mapMain.setZoom(options.zoom[1]);
-                                mapMain.behaviors.disable('drag');
-                                mapMain.behaviors.enable('multiTouch');
-
-                            } else if (windowWidth > options.breakpoint && lastResolution <= options.breakpoint && lastResolution !== 0) {
-                                mapMain.setZoom(options.zoom[0]);
-                                mapMain.behaviors.enable('drag');
-                                mapMain.behaviors.enable('multiTouch');
-                            }
-                            lastResolution = windowWidth;
-                        }
-                        ymaps.ready(mapResponsive);
-
-                        $(window).on('resize', function() {
-                            // ymaps.ready(mapResponsive);
-                            mapResponsive();
-                        });
                     },
                     google:function(options){
                             initMap();
 
                             function initMap() {
+                                var mapMain;
 
                                 var markers = options.placemarks;
                                 var infoWindow = new google.maps.InfoWindow(), marker, i;
@@ -295,34 +307,34 @@
                                     })(marker, placemark));
                                 }
 
-                            }
+                                var lastResolution = 0;
 
-                            var lastResolution = 0;
+                                function mapResponsive() {
+                                    windowWidth = window.innerWidth;
+                                    if(windowWidth <= options.breakpoint){
+                                        mapMain.setCenter({ lat: options.center[1][0], lng: options.center[1][1] });
+                                    } else if(windowWidth > options.breakpoint){
+                                        mapMain.setCenter({ lat: options.center[0][0], lng: options.center[0][1] });
+                                    }
+                                    if (windowWidth <= options.breakpoint && lastResolution > options.breakpoint || windowWidth <= options.breakpoint && lastResolution === 0) {
+                                        mapMain.setOptions({ 'draggable': false });
+                                        mapMain.setOptions({ 'scrollwheel': false });
+                                        mapMain.setZoom(options.zoom[1]);
+                                    } else if (windowWidth > options.breakpoint && lastResolution <= options.breakpoint && lastResolution !== 0) {
+                                        mapMain.setOptions({ 'draggable': true });
+                                        mapMain.setOptions({ 'scrollwheel': true });
+                                        mapMain.setZoom(options.zoom[0]);
+                                    }
+                                    google.maps.event.trigger(mapMain, 'resize');
+                                    lastResolution = windowWidth;
+                                }
+                                $(window).on('resize', function() {
+                                    mapResponsive();
+                                });
 
-                            function mapResponsive() {
-                                windowWidth = window.innerWidth;
-                                if(windowWidth <= options.breakpoint){
-                                    mapMain.setCenter({ lat: options.center[1][0], lng: options.center[1][1] });
-                                } else if(windowWidth > options.breakpoint){
-                                    mapMain.setCenter({ lat: options.center[0][0], lng: options.center[0][1] });
-                                }
-                                if (windowWidth <= options.breakpoint && lastResolution > options.breakpoint || windowWidth <= options.breakpoint && lastResolution === 0) {
-                                    mapMain.setOptions({ 'draggable': false });
-                                    mapMain.setOptions({ 'scrollwheel': false });
-                                    mapMain.setZoom(options.zoom[1]);
-                                } else if (windowWidth > options.breakpoint && lastResolution <= options.breakpoint && lastResolution !== 0) {
-                                    mapMain.setOptions({ 'draggable': true });
-                                    mapMain.setOptions({ 'scrollwheel': true });
-                                    mapMain.setZoom(options.zoom[0]);
-                                }
-                                google.maps.event.trigger(mapMain, 'resize');
-                                lastResolution = windowWidth;
-                            }
-                            $(window).on('resize', function() {
                                 mapResponsive();
-                            });
 
-                            mapResponsive();
+                            }
 
                     }
                 };
