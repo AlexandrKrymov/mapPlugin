@@ -30,11 +30,12 @@
                         return type;
                     },
                     dataToArray:function($elem, atr, sep, type){
-                        var dataArray
-                        var atrValue = $elem.attr(atr);
-                        if(!atrValue){
+                        var dataArray;
+                        var value = $elem.attr(atr);
+                        if(!value || value === ''){
                             return [];
                         }
+                        var atrValue = String(value).trim();
                         if (type == 'string') {
                             return atrValue.split(sep);
                         } else if (type === 'number') {
@@ -116,7 +117,7 @@
                             return coords;
                         }
                         if(!arrayMapCenter.length < 2){
-                            coords = [arrayMapCenter[0], arrayMapCenter[0]];
+                            coords = [arrayMapCenter[0], arrayMapCenter[1]];
                             return coords;
                         }
                         return arrayMapCenter;
@@ -140,18 +141,20 @@
                     },
                     getBreakpoint:function($elem,options){
                         var breakpoint = helper.dataToArray($elem,'data-map-breakpoint',';','number');
+                        console.log(breakpoint);
                         if(!breakpoint.length){
-                            breakpoint = options.zoom;
-                            return breakpoint;
+                            breakpoint = +options.breakpoint;
+
+                            return +breakpoint;
                         }
-                        return breakpoint;
+                        return +breakpoint;
                     },
                     getInitOptions:function($elem){
 
                         var options = {
                             type: 'yandex',
                             zoom: [18, 18],
-                            breakPoint: '768'
+                            breakpoint: '768'
                         };
 
                         // Присваиваем id блоку с картой
@@ -172,6 +175,7 @@
                         // Получаем координаты центра
                         var center = helper.getCenterCoords($elem,coords);
 
+
                         // Получаем массив подписей для точек
                         var labels = helper.getLabels($elem);
 
@@ -187,7 +191,7 @@
                         // Получаем значение брекпоинта
                         var breakpoint = helper.getBreakpoint($elem, options);
 
-                        console.log(helper.makeInitOptions(idMap,mapType,center,placemarks,zoom,breakpoint));
+                        // console.log(helper.makeInitOptions(idMap,mapType,center,placemarks,zoom,breakpoint));
 
                         return helper.makeInitOptions(idMap,mapType,center,placemarks,zoom,breakpoint);
                     }
@@ -208,6 +212,7 @@
                     },
                     yandex: function(options){
                         console.log('Yandex');
+                        console.log(options);
                         function initMaps() {
                             mapMain = new ymaps.Map(options.id, {
                                 center: options.center[0],
@@ -235,16 +240,19 @@
 
                         function mapResponsive() {
                             windowWidth = window.innerWidth;
-                            if (windowWidth <= options.breakpoint[0] && lastResolution > options.breakpoint[0] || windowWidth <= options.breakpoint[0] && lastResolution === 0) {
-                                console.log('yandex-mobile');
+                            if (windowWidth <= options.breakpoint) {
                                 mapMain.setCenter(options.center[1]);
+                            } else if (windowWidth > options.breakpoint) {
+                                mapMain.setCenter(options.center[0]);
+                            }
+                            if (windowWidth <= options.breakpoint && lastResolution > options.breakpoint || windowWidth <= options.breakpoint && lastResolution === 0) {
+                                console.log('yandex-mobile');
                                 mapMain.setZoom(options.zoom[1]);
                                 mapMain.behaviors.disable('drag');
                                 mapMain.behaviors.enable('multiTouch');
 
-                            } else if (windowWidth > options.breakpoint[0] && lastResolution <= options.breakpoint[0] && lastResolution !== 0) {
+                            } else if (windowWidth > options.breakpoint && lastResolution <= options.breakpoint && lastResolution !== 0) {
                                 console.log('yandex-desctop');
-                                mapMain.setCenter(options.center[0]);
                                 mapMain.setZoom(options.zoom[0]);
                                 mapMain.behaviors.enable('drag');
                                 mapMain.behaviors.enable('multiTouch');
@@ -254,23 +262,28 @@
                         ymaps.ready(mapResponsive);
 
                         $(window).on('resize', function() {
-                            ymaps.ready(mapResponsive);
+                            // ymaps.ready(mapResponsive);
+                            mapResponsive();
                         });
                     },
                     google:function(options){
                         console.log('Google');
+                        console.log(options);
                             initMap();
 
                             function initMap() {
 
                                 var markers = options.placemarks;
-                                var infoWindow = new google.maps.InfoWindow(),
-                                    marker, i;
+                                var infoWindow = new google.maps.InfoWindow(), marker, i;
+                                // var infoWindow = new google.maps.InfoWindow(),
+                                //     marker, i;
 
                                 mapMain = new google.maps.Map(document.getElementById(options.id), {
                                     center: { lat: options.center[0][0], lng: options.center[0][1] },
                                     zoom: options.zoom[0],
                                     disableDefaultUI: true,
+                                    scrollwheel: true,
+                                    mapTypeId: 'roadmap'
                                 });
 
                                 for (i = 0; i < options.placemarks.length; i++) {
@@ -295,16 +308,18 @@
 
                             function mapResponsive() {
                                 windowWidth = window.innerWidth;
-                                if (windowWidth <= options.breakpoint[0] && lastResolution > options.breakpoint[0] || windowWidth <= options.breakpoint[0] && lastResolution === 0) {
+                                if(windowWidth <= options.breakpoint){
+                                    mapMain.setCenter({ lat: options.center[1][0], lng: options.center[1][1] });
+                                } else if(windowWidth > options.breakpoint){
+                                    mapMain.setCenter({ lat: options.center[0][0], lng: options.center[0][1] });
+                                }
+                                if (windowWidth <= options.breakpoint && lastResolution > options.breakpoint || windowWidth <= options.breakpoint && lastResolution === 0) {
                                     mapMain.setOptions({ 'draggable': false });
                                     mapMain.setOptions({ 'scrollwheel': false });
-                                    console.log(options.center);
-                                    mapMain.setCenter({ lat: options.center[1][0], lng: options.center[1][1] });
                                     mapMain.setZoom(options.zoom[1]);
-                                } else if (windowWidth > options.breakpoint[0] && lastResolution <= options.breakpoint[0] && lastResolution !== 0) {
+                                } else if (windowWidth > options.breakpoint && lastResolution <= options.breakpoint && lastResolution !== 0) {
                                     mapMain.setOptions({ 'draggable': true });
                                     mapMain.setOptions({ 'scrollwheel': true });
-                                    mapMain.setCenter({ lat: options.center[0][0], lng: options.center[0][1] });
                                     mapMain.setZoom(options.zoom[0]);
                                 }
                                 google.maps.event.trigger(mapMain, 'resize');
