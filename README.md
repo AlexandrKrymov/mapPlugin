@@ -11,6 +11,14 @@
 Первый скрипт это библиотека JQuery, которая используется плагином
 Другие два скрипта нужны для работы с API Yandex Map и Google Map, если вы используете только один тип карт, то подключите только необходимый скрипт.
 
+### Документация Yandex Map API
+
+https://tech.yandex.ru/maps/doc/jsapi/2.1/quick-start/tasks/quick-start-docpage?from=jsapi
+
+### Документация Google Map API
+
+https://developers.google.com/maps/documentation/javascript/
+
 ### Пример
 
 ```html
