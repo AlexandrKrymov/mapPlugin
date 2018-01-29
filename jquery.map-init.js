@@ -117,7 +117,7 @@
                             return coords;
                         }
                         if(!arrayMapCenter.length < 2){
-                            coords = [arrayMapCenter[0], arrayMapCenter[1]];
+                            coords = [arrayMapCenter[0], arrayMapCenter[0]];
                             return coords;
                         }
                         return arrayMapCenter;
@@ -141,7 +141,6 @@
                     },
                     getBreakpoint:function($elem,options){
                         var breakpoint = helper.dataToArray($elem,'data-map-breakpoint',';','number');
-                        console.log(breakpoint);
                         if(!breakpoint.length){
                             breakpoint = +options.breakpoint;
 
@@ -211,8 +210,6 @@
                         }
                     },
                     yandex: function(options){
-                        console.log('Yandex');
-                        console.log(options);
                         function initMaps() {
                             mapMain = new ymaps.Map(options.id, {
                                 center: options.center[0],
@@ -246,13 +243,11 @@
                                 mapMain.setCenter(options.center[0]);
                             }
                             if (windowWidth <= options.breakpoint && lastResolution > options.breakpoint || windowWidth <= options.breakpoint && lastResolution === 0) {
-                                console.log('yandex-mobile');
                                 mapMain.setZoom(options.zoom[1]);
                                 mapMain.behaviors.disable('drag');
                                 mapMain.behaviors.enable('multiTouch');
 
                             } else if (windowWidth > options.breakpoint && lastResolution <= options.breakpoint && lastResolution !== 0) {
-                                console.log('yandex-desctop');
                                 mapMain.setZoom(options.zoom[0]);
                                 mapMain.behaviors.enable('drag');
                                 mapMain.behaviors.enable('multiTouch');
@@ -267,8 +262,6 @@
                         });
                     },
                     google:function(options){
-                        console.log('Google');
-                        console.log(options);
                             initMap();
 
                             function initMap() {
