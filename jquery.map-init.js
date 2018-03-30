@@ -267,10 +267,9 @@
                                 ymaps.ready(mapResponsive);
                                 // mapResponsive();
                             });
-
+                            return mapMain;
                         }
                         ymaps.ready(initMaps);
-
                     },
                     google:function(options){
                             initMap();
@@ -287,8 +286,8 @@
                                     center: { lat: options.center[0][0], lng: options.center[0][1] },
                                     zoom: options.zoom[0],
                                     disableDefaultUI: true,
-                                    scrollwheel: true,
-                                    mapTypeId: 'roadmap'
+                                    mapTypeId: 'roadmap',
+                                    styles: '',
                                 });
 
                                 for (i = 0; i < options.placemarks.length; i++) {
@@ -311,6 +310,7 @@
 
                                 function mapResponsive() {
                                     windowWidth = window.innerWidth;
+                                    console.log(options.breakpoint);
                                     if(windowWidth <= options.breakpoint){
                                         mapMain.setCenter({ lat: options.center[1][0], lng: options.center[1][1] });
                                     } else if(windowWidth > options.breakpoint){
@@ -339,8 +339,10 @@
                     }
                 };
 
-                main.init($map);
+                return main.init($map);
             });
+
+            return
         }
 
     };

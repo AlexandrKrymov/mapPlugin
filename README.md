@@ -6,7 +6,7 @@
 ```html
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" defer></script>
-<script src='https://maps.googleapis.com/maps/api/js?key=AIzaSyC4T-H8Uh6hP2gSP05DyocP-C3B88gH790' defer></script>
+<script src='https://maps.googleapis.com/maps/api/js?key=Ваш_API_Key' defer></script>
 ```
 Первый скрипт это библиотека JQuery, которая используется плагином
 Другие два скрипта нужны для работы с API Yandex Map и Google Map, если вы используете только один тип карт, то подключите только необходимый скрипт.
