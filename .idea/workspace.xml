@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="43f93dd7-6d2c-467f-a589-1f0a0ab7245c" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/index.html" afterPath="$PROJECT_DIR$/index.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/jquery.map-init.js" afterPath="$PROJECT_DIR$/jquery.map-init.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/README.md" afterPath="$PROJECT_DIR$/README.md" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -39,7 +38,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="jquery.map-init.js" pinned="false" current-in-tab="true">
+      <file leaf-file-name="jquery.map-init.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/jquery.map-init.js">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="163">
@@ -64,6 +63,23 @@
                 <element signature="e#17495#17596#0" expanded="false" />
                 <element signature="e#17645#17712#0" expanded="false" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="README.md" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/README.md">
+          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+            <state split_layout="SPLIT">
+              <first_editor relative-caret-position="433">
+                <caret line="135" column="2" lean-forward="true" selection-start-line="135" selection-start-column="2" selection-end-line="135" selection-end-column="2" />
+                <folding>
+                  <marker date="1527235896169" expanded="true" signature="1366:1425" ph="{&quot;type&quot;: 'yandex'...}" />
+                  <marker date="1527235896169" expanded="true" signature="1366:1442" ph="{&quot;type&quot;: 'yandex'...}" />
+                  <marker date="1527235896169" expanded="true" signature="1471:1547" ph="{&quot;type&quot;: 'google'...}" />
+                </folding>
+              </first_editor>
+              <second_editor />
             </state>
           </provider>
         </entry>
@@ -93,10 +109,10 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/mapInit.js" />
         <option value="$PROJECT_DIR$/index.html" />
         <option value="$PROJECT_DIR$/jquery.map-init.js" />
+        <option value="$PROJECT_DIR$/README.md" />
       </list>
     </option>
   </component>
@@ -179,12 +195,12 @@
       <workItem from="1517208281079" duration="4059000" />
       <workItem from="1517226026289" duration="5068000" />
       <workItem from="1522397565313" duration="4063000" />
-      <workItem from="1527229982710" duration="5207000" />
+      <workItem from="1527229982710" duration="5451000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="18397000" />
+    <option name="totallyTimeSpent" value="18641000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -296,8 +312,9 @@
           <first_editor relative-caret-position="323">
             <caret line="19" column="60" lean-forward="false" selection-start-line="19" selection-start-column="60" selection-end-line="19" selection-end-column="60" />
             <folding>
-              <marker date="1522397627653" expanded="true" signature="1366:1427" ph="{&quot;type&quot;: 'yandex'...}" />
-              <marker date="1522397627653" expanded="true" signature="1456:1517" ph="{&quot;type&quot;: 'google'...}" />
+              <marker date="1527235896169" expanded="true" signature="1366:1425" ph="{&quot;type&quot;: 'yandex'...}" />
+              <marker date="1527235896169" expanded="true" signature="1366:1442" ph="{&quot;type&quot;: 'yandex'...}" />
+              <marker date="1527235896169" expanded="true" signature="1471:1547" ph="{&quot;type&quot;: 'google'...}" />
             </folding>
           </first_editor>
           <second_editor />
@@ -371,20 +388,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="136">
-            <caret line="8" column="61" lean-forward="false" selection-start-line="8" selection-start-column="61" selection-end-line="8" selection-end-column="61" />
-            <folding>
-              <marker date="1522397627653" expanded="true" signature="1366:1427" ph="{&quot;type&quot;: 'yandex'...}" />
-              <marker date="1522397627653" expanded="true" signature="1456:1517" ph="{&quot;type&quot;: 'google'...}" />
-            </folding>
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/mapInit.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="68">
@@ -430,6 +433,21 @@
             <element signature="e#17495#17596#0" expanded="false" />
             <element signature="e#17645#17712#0" expanded="false" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="433">
+            <caret line="135" column="2" lean-forward="true" selection-start-line="135" selection-start-column="2" selection-end-line="135" selection-end-column="2" />
+            <folding>
+              <marker date="1527235896169" expanded="true" signature="1366:1425" ph="{&quot;type&quot;: 'yandex'...}" />
+              <marker date="1527235896169" expanded="true" signature="1366:1442" ph="{&quot;type&quot;: 'yandex'...}" />
+              <marker date="1527235896169" expanded="true" signature="1471:1547" ph="{&quot;type&quot;: 'google'...}" />
+            </folding>
+          </first_editor>
+          <second_editor />
         </state>
       </provider>
     </entry>
