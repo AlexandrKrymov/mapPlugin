@@ -84,14 +84,15 @@
                         }
                         return arrayPlacemarks;
                     },
-                    makeInitOptions:function(id,type,center,placemarks,zoom,breakpoint){
+                    makeInitOptions:function(id,type,center,placemarks,zoom,breakpoint,ui){
                         return {
                             id: id,
                             type:type,
                             center:center,
                             placemarks:placemarks,
                             zoom:zoom,
-                            breakpoint:breakpoint
+                            breakpoint:breakpoint,
+                            ui: ui,
                         };
                     },
                     getCoordsMarker:function ($elem){
@@ -151,7 +152,8 @@
                         var options = {
                             type: 'yandex',
                             zoom: [18, 18],
-                            breakpoint: '768'
+                            breakpoint: '768',
+                            ui: true,
                         };
 
                         // Присваиваем id блоку с картой
@@ -190,7 +192,7 @@
 
                         // console.log(helper.makeInitOptions(idMap,mapType,center,placemarks,zoom,breakpoint));
 
-                        return helper.makeInitOptions(idMap,mapType,center,placemarks,zoom,breakpoint);
+                        return helper.makeInitOptions(idMap,mapType,center,placemarks,zoom,breakpoint,options.ui);
                     }
                 };
 
@@ -224,7 +226,8 @@
                                 center: options.center[0],
                                 zoom: options.zoom[0],
                                 scroll: false,
-                                duration: 1000
+                                duration: 1000,
+                                controls: (options.ui) ? '' : [],
                             });
 
                             mapMain.behaviors.disable('scrollZoom');
@@ -279,13 +282,11 @@
 
                                 var markers = options.placemarks;
                                 var infoWindow = new google.maps.InfoWindow(), marker, i;
-                                // var infoWindow = new google.maps.InfoWindow(),
-                                //     marker, i;
 
                                 mapMain = new google.maps.Map(document.getElementById(options.id), {
                                     center: { lat: options.center[0][0], lng: options.center[0][1] },
                                     zoom: options.zoom[0],
-                                    disableDefaultUI: true,
+                                    disableDefaultUI: (options.ui) ? false : true,
                                     mapTypeId: 'roadmap',
                                     styles: '',
                                 });
@@ -295,7 +296,7 @@
                                     marker = new google.maps.Marker({
                                         position: { lat: placemark.coords[0], lng: placemark.coords[1] },
                                         map: mapMain,
-                                        title: placemark.label
+                                        title: placemark.label,
                                     });
 
                                     google.maps.event.addListener(marker, 'click', (function(marker,placemark) {
