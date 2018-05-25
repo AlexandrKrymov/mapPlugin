@@ -28,10 +28,10 @@
                         return type;
                     },
                     dataToArray:function($elem, atr, sep, type){
-                        var dataArray;
+                        var dataArray = [];
                         var value = $elem.attr(atr);
                         if(!value || value === ''){
-                            return [];
+                            return dataArray;
                         }
                         var atrValue = String(value).trim();
                         if (type == 'string') {
@@ -147,6 +147,19 @@
                         }
                         return +breakpoint;
                     },
+                    getUi:function($elem,options){
+                        var ui = helper.dataToArray($elem,'data-map-ui',';','string');
+                        console.log(typeof(ui));
+                        if(!ui.length){
+                            ui = options.ui;
+                            return ui;
+                        } else if(ui[0] === 'true'){
+                            ui = true;
+                        } else if(ui[0] === 'false'){
+                            ui = false;
+                        }
+                        return ui;
+                    },
                     getInitOptions:function($elem){
 
                         var options = {
@@ -174,7 +187,6 @@
                         // Получаем координаты центра
                         var center = helper.getCenterCoords($elem,coords);
 
-
                         // Получаем массив подписей для точек
                         var labels = helper.getLabels($elem);
 
@@ -190,9 +202,13 @@
                         // Получаем значение брекпоинта
                         var breakpoint = helper.getBreakpoint($elem, options);
 
+                        // Включаем стандартные элементы управления или нет?
+
+                        var ui = helper.getUi($elem, options);
+
                         // console.log(helper.makeInitOptions(idMap,mapType,center,placemarks,zoom,breakpoint));
 
-                        return helper.makeInitOptions(idMap,mapType,center,placemarks,zoom,breakpoint,options.ui);
+                        return helper.makeInitOptions(idMap,mapType,center,placemarks,zoom,breakpoint,ui);
                     }
                 };
 
@@ -280,7 +296,6 @@
                             function initMap() {
                                 var mapMain;
 
-                                var markers = options.placemarks;
                                 var infoWindow = new google.maps.InfoWindow(), marker, i;
 
                                 mapMain = new google.maps.Map(document.getElementById(options.id), {
@@ -311,7 +326,6 @@
 
                                 function mapResponsive() {
                                     windowWidth = window.innerWidth;
-                                    console.log(options.breakpoint);
                                     if(windowWidth <= options.breakpoint){
                                         mapMain.setCenter({ lat: options.center[1][0], lng: options.center[1][1] });
                                     } else if(windowWidth > options.breakpoint){
@@ -343,7 +357,7 @@
                 return main.init($map);
             });
 
-            return
+            return;
         }
 
     };
